@@ -1,18 +1,17 @@
-let state = createState()
+let state = createNewState()
 let board = document.querySelector(".board")
+let currentColorLabel = document.querySelector(".current-color")
 
-setInterval(() => {
-    fillField()
-    showBoard()
-}, 1000)
-function createState() {
+document.querySelector(".new-game").addEventListener("click", newGame)
+
+function createNewState() {
     let board = Array(6).fill('').map(el => Array(7).fill(''))
-    return { board: board }
+    let currentColor = 'r'
+    return { board: board, currentColor: currentColor }
 }
 
 function showBoard() {
-    clearBoard(board)
-
+    clearBoard()
     let stone
     let field
     let fieldState
@@ -28,37 +27,41 @@ function showBoard() {
                 stone = null
             }
             field = elt("div", {class: "field"}, ...(stone ? [stone] : []))
+            field.addEventListener("click", () => addStone(col))
             board.appendChild(field)
         }
     }
-}
-function fillField(){
-    let [col, row] = randomField()
-    state.board[row][col] = randomState()
+    currentColorLabel.textContent = state.currentColor === 'r' ? "Rot" : "Blau"
 }
 
-function randomField() {
-    const row = Math.floor(Math.random() * 6);
-    const col = Math.floor(Math.random() * 7);
-    return [col, row]
-}
-
-function randomState() {
-    let state = Math.floor(Math.random() * 3);
-    switch (state) {
-        case 0:
-            return 'r'
-        case 1 :
-            return 'b'
-        case 2:
-            return ''
+function addStone(col) {
+    const row = getFreeRow(col)
+    if(row !== null ){
+        state.board[row][col] = state.currentColor;
+        changeColor();
+        showBoard()
     }
 }
+function getFreeRow(col){
+    for (let i = (state.board.length - 1) ; i >= 0; i--){
+        if (state.board[i][col] === ''){
+            return i
+        }
+    }
+    return null
 
+}
 
-function clearBoard(board) {
+function changeColor() {
+    state.currentColor = state.currentColor === 'r' ? 'b' : 'r'
+}
+function newGame(){
+    state = createNewState()
+    showBoard()
+}
+
+function clearBoard() {
     board.innerHTML = ""
-    return board
 }
 
 function elt (type, attrs, ...children) {
@@ -73,3 +76,4 @@ function elt (type, attrs, ...children) {
     return node
 }
 
+showBoard()
