@@ -1,8 +1,12 @@
+const STATE_URL = "api/data/c4state?api-key=c4game"
+
 let state = createNewState()
 let board = document.querySelector(".board")
 let currentColorLabel = document.querySelector(".current-color")
 
 document.querySelector(".new-game").addEventListener("click", newGame)
+document.querySelector(".load").addEventListener("click", loadState)
+document.querySelector(".save").addEventListener("click", saveState)
 
 function createNewState() {
     let board = Array(6).fill('').map(el => Array(7).fill(''))
@@ -58,6 +62,31 @@ function changeColor() {
 function newGame(){
     state = createNewState()
     showBoard()
+}
+
+function loadState() {
+    fetch(STATE_URL)
+        .then(response => {
+            if (!response.ok) throw new Error("Laden fehlgeschlagen: " + response.status)
+            return response.json()
+        })
+        .then(data => {
+            state = data
+            showBoard()
+        })
+        .catch(err => console.error(err))
+}
+
+function saveState() {
+    fetch(STATE_URL, {
+        method: 'PUT',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify(state)
+    })
+        .then(response => {
+            if (!response.ok) throw new Error("Speichern fehlgeschlagen: " + response.status)
+        })
+        .catch(err => console.error(err))
 }
 
 function clearBoard() {
