@@ -1,8 +1,10 @@
+import { connect4Winner } from "./winner.js"
+
 const STATE_URL = "api/data/c4state?api-key=c4game"
 
 let state = createNewState()
 let board = document.querySelector(".board")
-let currentColorLabel = document.querySelector(".current-color")
+let statusLabel = document.querySelector(".status")
 
 document.querySelector(".new-game").addEventListener("click", newGame)
 document.querySelector(".load").addEventListener("click", loadState)
@@ -11,7 +13,7 @@ document.querySelector(".save").addEventListener("click", saveState)
 function createNewState() {
     let board = Array(6).fill('').map(el => Array(7).fill(''))
     let currentColor = 'r'
-    return { board: board, currentColor: currentColor }
+    return { board: board, currentColor: currentColor, winner: null }
 }
 
 function showBoard() {
@@ -35,14 +37,25 @@ function showBoard() {
             board.appendChild(field)
         }
     }
-    currentColorLabel.textContent = state.currentColor === 'r' ? "Rot" : "Blau"
+    const name = state.currentColor === 'r' ? "Rot" : "Blau"
+    if (state.winner) {
+        statusLabel.textContent = name + " hat gewonnen!"
+    } else {
+        statusLabel.textContent = "Am Zug: " + name
+    }
 }
 
 function addStone(col) {
+    if (state.winner) {
+        return
+    }
     const row = getFreeRow(col)
     if(row !== null ){
         state.board[row][col] = state.currentColor;
-        changeColor();
+        checkWinner()
+        if (!state.winner) {
+            changeColor()
+        }
         showBoard()
     }
 }
@@ -92,6 +105,13 @@ function saveState() {
 function clearBoard() {
     board.innerHTML = ""
 }
+
+function checkWinner(){
+    if (connect4Winner(state.currentColor, state.board)) {
+        state.winner = state.currentColor
+    }
+}
+
 
 function elt (type, attrs, ...children) {
     let node = document.createElement(type)
